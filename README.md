@@ -1,1 +1,3 @@
-# The Atomic Blog - React context
+# The Atomic Blog
+
+⚛️ Advanced state management : Context API

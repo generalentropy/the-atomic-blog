@@ -1,6 +1,5 @@
-import { useEffect, useState, useContext } from "react";
+import { useEffect, useState, createContext, useContext } from "react";
 import { faker } from "@faker-js/faker";
-import { PostProvider, PostContext } from "./PostContext";
 
 function createRandomPost() {
   return {
@@ -9,17 +8,55 @@ function createRandomPost() {
   };
 }
 
+// 1/ create a context
+const PostContext = createContext();
+
 function App() {
+  const [posts, setPosts] = useState(() =>
+    Array.from({ length: 30 }, () => createRandomPost())
+  );
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isFakeDark, setIsFakeDark] = useState(false);
+
+  // Derived state. These are the posts that will actually be displayed
+  const searchedPosts =
+    searchQuery.length > 0
+      ? posts.filter((post) =>
+          `${post.title} ${post.body}`
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase())
+        )
+      : posts;
+
+  function handleAddPost(post) {
+    setPosts((posts) => [post, ...posts]);
+  }
+
+  function handleClearPosts() {
+    setPosts([]);
+  }
+
   return (
-    <section>
-      <PostProvider>
+    // 2/ provide value to child components
+    <PostContext.Provider
+      value={{
+        posts: searchedPosts,
+        onAddPost: handleAddPost,
+        onClearPosts: handleClearPosts,
+        searchQuery,
+        setSearchQuery,
+        isFakeDark,
+        setIsFakeDark,
+      }}
+    >
+      <section>
         <ThemeSwitchButton />
         <Header />
         <Main />
         <Archive />
         <Footer />
-      </PostProvider>
-    </section>
+      </section>
+    </PostContext.Provider>
   );
 }
 
@@ -151,6 +188,10 @@ function Archive() {
   );
 }
 
+function Footer() {
+  return <footer>&copy; by The Atomic Blog ✌️</footer>;
+}
+
 function ThemeSwitchButton() {
   const { isFakeDark, setIsFakeDark } = useContext(PostContext);
 
@@ -170,10 +211,6 @@ function ThemeSwitchButton() {
       {isFakeDark ? "☀️" : "🌙"}
     </button>
   );
-}
-
-function Footer() {
-  return <footer>&copy; by The Atomic Blog ✌️</footer>;
 }
 
 export default App;
