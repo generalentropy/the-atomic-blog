@@ -1,14 +1,14 @@
 import { createContext, useContext, useState } from "react";
 import { faker } from "@faker-js/faker";
 
+const PostContext = createContext();
+
 function createRandomPost() {
   return {
     title: `${faker.hacker.adjective()} ${faker.hacker.noun()}`,
     body: faker.hacker.phrase(),
   };
 }
-
-const PostContext = createContext();
 
 function PostProvider({ children }) {
   const [isFakeDark, setIsFakeDark] = useState(false);
@@ -54,6 +54,9 @@ function PostProvider({ children }) {
 
 function usePosts() {
   const context = useContext(PostContext);
+  if (context === undefined)
+    throw new Error("PostContext was used outside of the PostProvider");
+
   return context;
 }
 
